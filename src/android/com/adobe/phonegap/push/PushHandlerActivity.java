@@ -110,7 +110,9 @@ public class PushHandlerActivity extends Activity implements PushConstants {
                 launchIntent.putExtras(originalExtras);
             }
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			launchIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             launchIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+			launchIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             launchIntent.putExtra(START_IN_BACKGROUND, startOnBackground);
         }
 
