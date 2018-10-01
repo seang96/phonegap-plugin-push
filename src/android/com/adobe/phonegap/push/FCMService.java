@@ -518,10 +518,11 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
     mNotificationManager.notify(appName, notId, mBuilder.build());
   }
 
-  private void updateIntent(Intent intent, String callback, Bundle extras, boolean foreground, int notId) {
+  private void updateIntent(Intent intent, String callback, Bundle extras, boolean foreground, boolean cancel, int notId) {
     intent.putExtra(CALLBACK, callback);
     intent.putExtra(PUSH_BUNDLE, extras);
     intent.putExtra(FOREGROUND, foreground);
+    intent.putExtra(CANCEL, cancel);
     intent.putExtra(NOT_ID, notId);
   }
 
@@ -543,6 +544,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
           Log.d(LOG_TAG, "adding callback = " + action.getString(CALLBACK));
           boolean foreground = action.optBoolean(FOREGROUND, true);
           boolean inline = action.optBoolean("inline", false);
+		  boolean cancel = action.optBoolean("cancel", true);
           Intent intent = null;
           PendingIntent pIntent = null;
           if (inline) {
@@ -555,7 +557,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
               intent = new Intent(this, BackgroundActionButtonHandler.class);
             }
 
-            updateIntent(intent, action.getString(CALLBACK), extras, foreground, notId);
+            updateIntent(intent, action.getString(CALLBACK), extras, foreground, cancel, notId);
 
             if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.M) {
               Log.d(LOG_TAG, "push activity for notId " + notId);
@@ -568,12 +570,12 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
             }
           } else if (foreground) {
             intent = new Intent(this, PushHandlerActivity.class);
-            updateIntent(intent, action.getString(CALLBACK), extras, foreground, notId);
+            updateIntent(intent, action.getString(CALLBACK), extras, foreground, cancel, notId);
             pIntent = PendingIntent.getActivity(this, uniquePendingIntentRequestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
           } else {
             intent = new Intent(this, BackgroundActionButtonHandler.class);
-            updateIntent(intent, action.getString(CALLBACK), extras, foreground, notId);
+            updateIntent(intent, action.getString(CALLBACK), extras, foreground, cancel, notId);
             pIntent = PendingIntent.getBroadcast(this, uniquePendingIntentRequestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
           }
