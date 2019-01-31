@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.AudioAttributes;
@@ -45,6 +46,8 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
   private static CordovaWebView gWebView;
   private static List<Bundle> gCachedExtras = Collections.synchronizedList(new ArrayList<Bundle>());
   private static boolean gForeground = false;
+  private static volatile boolean isRunning = false;
+  private static CordovaInterface gCordova;
 
   private static String registration_id = "";
 
@@ -161,7 +164,7 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
         createChannel(options);
       } catch (JSONException e) {
         Log.e(LOG_TAG, "execute: Got JSON Exception " + e.getMessage());
-      }
+	}
     }
   }
 
@@ -217,6 +220,7 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
               JSONArray topics = jo.optJSONArray(TOPICS);
               subscribeToTopics(topics, registration_id);
 
+			  isRunning = true;
               PushPlugin.sendEvent(json);
             } else {
               callbackContext.error("Empty registration ID received from FCM");
@@ -441,6 +445,15 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
   }
 
   public static void sendEvent(JSONObject _json) {
+	while (!isRunning) {
+		Log.d(LOG_TAG, "Not running trying action again in a second...");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			Log.d(LOG_TAG, "Sleeping failed.");
+		}
+	}
+    Log.d(LOG_TAG, "pushContext =[" + pushContext + "]");
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, _json);
     pluginResult.setKeepCallback(true);
     if (pushContext != null) {
@@ -462,14 +475,17 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
    * cached for later processing.
    */
   public static void sendExtras(Bundle extras) {
+    Log.d(LOG_TAG, "sendExtras");
+    Log.d(LOG_TAG, "extras =[" + extras + "]");
     if (extras != null) {
       String noCache = extras.getString(NO_CACHE);
+	  Log.d(LOG_TAG, "noCache =[" + noCache + "]");
       if (gWebView != null) {
         sendEvent(convertBundleToJson(extras));
       } else if (!"1".equals(noCache)) {
         Log.v(LOG_TAG, "sendExtras: caching extras to send at a later time.");
         gCachedExtras.add(extras);
-      }
+	  }
     }
   }
 
@@ -498,8 +514,10 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
 
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+	Log.d(LOG_TAG, "Plugin Initializing");
     super.initialize(cordova, webView);
     gForeground = true;
+	gCordova = cordova;
   }
 
   @Override
@@ -522,9 +540,11 @@ public class PushPlugin extends CordovaPlugin implements PushConstants {
 
   @Override
   public void onDestroy() {
+	Log.d(LOG_TAG, "Activity is being destroyed");
     super.onDestroy();
     gForeground = false;
     gWebView = null;
+	isRunning = false;
   }
 
   private void clearAllNotifications() {
