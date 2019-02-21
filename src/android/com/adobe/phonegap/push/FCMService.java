@@ -524,7 +524,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
     /*
      * Notification add actions
      */
-    createActions(extras, mBuilder, resources, packageName, notId);
+    createActions(context, extras, mBuilder, resources, packageName, notId);
 
     mNotificationManager.notify(appName, notId, mBuilder.build());
   }
@@ -537,7 +537,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
     intent.putExtra(NOT_ID, notId);
   }
 
-  private void createActions(Bundle extras, NotificationCompat.Builder mBuilder, Resources resources,
+  private void createActions(Context context, Bundle extras, NotificationCompat.Builder mBuilder, Resources resources,
       String packageName, int notId) {
     Log.d(LOG_TAG, "create actions: with in-line");
     String actions = extras.getString(ACTIONS);
@@ -552,6 +552,10 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
           int uniquePendingIntentRequestCode = random.nextInt((max - min) + 1) + min;
           Log.d(LOG_TAG, "adding action");
           JSONObject action = actionsArray.getJSONObject(i);
+
+          //Localize Title
+          action.put(TITLE, localizeKey(context, TITLE, action.getString(TITLE)));
+
           Log.d(LOG_TAG, "adding callback = " + action.getString(CALLBACK));
           boolean foreground = action.optBoolean(FOREGROUND, true);
           boolean inline = action.optBoolean("inline", false);
