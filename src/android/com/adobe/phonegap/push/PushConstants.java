@@ -103,4 +103,8 @@ public interface PushConstants {
   public static final String LIST_CHANNELS = "listChannels";
   public static final String CLEAR_NOTIFICATION = "clearNotification";
   public static final String CANCEL = "cancel";
+  public static final String INTEGER = "int";
+  public static final String LONG = "long";
+  public static final String DATA_TYPE = "dataType";
+  public static final String VALUE = "value";
 }

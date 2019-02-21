@@ -159,12 +159,23 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
 
         String localeKey = localeObject.getString(LOC_KEY);
 
-        ArrayList<String> localeFormatData = new ArrayList<String>();
+        ArrayList localeFormatData = new ArrayList();
         if (!localeObject.isNull(LOC_DATA)) {
           String localeData = localeObject.getString(LOC_DATA);
           JSONArray localeDataArray = new JSONArray(localeData);
           for (int i = 0; i < localeDataArray.length(); i++) {
-            localeFormatData.add(localeDataArray.getString(i));
+            JSONObject localeDataObject = localeDataArray.getJSONObject(i);
+            switch (localeDataObject.getString(DATA_TYPE)) {
+              case INTEGER:
+                localeFormatData.add(localeDataObject.getInt(VALUE));
+                break;
+              case LONG:
+                localeFormatData.add(localeDataObject.getLong(VALUE));
+                break;
+              default:
+                localeFormatData.add(localeDataObject.getString(VALUE));
+                break;
+            }
           }
         }
 
