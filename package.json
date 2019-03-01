@@ -67,13 +67,13 @@
   "author": "Adobe PhoneGap Team",
   "license": "MIT",
   "scripts": {
-    "build": "npx babel src/js --out-dir www",
+    "build": "npm i && babel src/js --out-dir www",
     "build:watch": "nodemon -w ./src/js -e js -x npm run build",
     "eslint": "node node_modules/.bin/eslint src/js",
     "jasmine": "jasmine-node --color spec",
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
     "test": "npm run build && npm run jasmine",
-    "prepack": "npm i && npm run build"
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
