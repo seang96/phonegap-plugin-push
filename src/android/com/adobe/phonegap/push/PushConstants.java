@@ -107,4 +107,5 @@ public interface PushConstants {
   public static final String LONG = "long";
   public static final String DATA_TYPE = "dataType";
   public static final String VALUE = "value";
+  public static final String MESSAGE_ID = "google.message_id";
 }
